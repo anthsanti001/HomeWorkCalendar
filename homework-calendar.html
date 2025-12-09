@@ -1,0 +1,1493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Homework Calendar</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --primary-light: #a5b4fc;
+            --secondary: #f1f5f9;
+            --accent: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --background: #f8fafc;
+            --card-bg: #ffffff;
+            --border: #e2e8f0;
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--background);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        /* Header */
+        .header {
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: var(--shadow);
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.25rem;
+        }
+
+        .logo-text {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .user-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.5rem 1rem;
+            background: var(--secondary);
+            border-radius: 50px;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .user-name {
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .btn {
+            padding: 0.625rem 1.25rem;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-secondary {
+            background: var(--secondary);
+            color: var(--text-primary);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .btn-google {
+            background: white;
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 0.75rem 1.5rem;
+        }
+
+        .btn-google:hover {
+            background: var(--secondary);
+            box-shadow: var(--shadow);
+        }
+
+        .btn-google img {
+            width: 20px;
+            height: 20px;
+        }
+
+        /* Main Layout */
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 2rem;
+        }
+
+        @media (max-width: 1024px) {
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Calendar */
+        .calendar-section {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .calendar-nav {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .calendar-nav button {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: var(--card-bg);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+        }
+
+        .calendar-nav button:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .current-month {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .today-btn {
+            font-size: 0.875rem !important;
+            width: auto !important;
+            padding: 0.5rem 1rem !important;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+        }
+
+        .calendar-day-header {
+            text-align: center;
+            padding: 0.75rem;
+            font-weight: 600;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            min-height: 80px;
+            border-radius: 12px;
+            padding: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: var(--secondary);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .calendar-day:hover {
+            background: var(--primary-light);
+            transform: scale(1.02);
+        }
+
+        .calendar-day.other-month {
+            opacity: 0.4;
+        }
+
+        .calendar-day.today {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+        }
+
+        .calendar-day.today .day-number {
+            color: white;
+        }
+
+        .calendar-day.selected {
+            ring: 3px solid var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-light);
+        }
+
+        .day-number {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--text-primary);
+        }
+
+        .day-assignments {
+            flex: 1;
+            overflow: hidden;
+            margin-top: 0.25rem;
+        }
+
+        .assignment-dot {
+            width: 100%;
+            padding: 2px 4px;
+            border-radius: 4px;
+            font-size: 0.65rem;
+            margin-bottom: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: white;
+            font-weight: 500;
+        }
+
+        .assignment-dot.homework { background: var(--primary); }
+        .assignment-dot.project { background: var(--accent); }
+        .assignment-dot.exam { background: var(--danger); }
+        .assignment-dot.quiz { background: var(--warning); }
+
+        .more-assignments {
+            font-size: 0.65rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        /* Assignment Form */
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 500;
+            margin-bottom: 0.375rem;
+            color: var(--text-secondary);
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-family: inherit;
+            transition: all 0.2s;
+            background: var(--card-bg);
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-light);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        /* Assignment List */
+        .assignment-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .assignment-item {
+            padding: 1rem;
+            border-radius: 12px;
+            background: var(--secondary);
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .assignment-item:hover {
+            transform: translateX(4px);
+            box-shadow: var(--shadow);
+        }
+
+        .assignment-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.5rem;
+        }
+
+        .assignment-title {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .assignment-type {
+            padding: 0.25rem 0.5rem;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        .assignment-type.homework { background: var(--primary-light); color: var(--primary-dark); }
+        .assignment-type.project { background: #a7f3d0; color: #047857; }
+        .assignment-type.exam { background: #fecaca; color: #b91c1c; }
+        .assignment-type.quiz { background: #fde68a; color: #b45309; }
+
+        .assignment-subject {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
+        }
+
+        .assignment-due {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+        }
+
+        .assignment-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+        }
+
+        .assignment-actions button {
+            padding: 0.375rem 0.75rem;
+            font-size: 0.75rem;
+            border-radius: 6px;
+        }
+
+        .completed {
+            opacity: 0.6;
+            text-decoration: line-through;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 2rem;
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            transform: scale(0.9);
+            transition: all 0.3s;
+        }
+
+        .modal-overlay.active .modal {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: none;
+            background: var(--secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            transition: all 0.2s;
+        }
+
+        .modal-close:hover {
+            background: var(--danger);
+            color: white;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-secondary);
+        }
+
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Login Section */
+        .login-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            padding: 2rem;
+        }
+
+        .login-section p {
+            color: var(--text-secondary);
+            text-align: center;
+        }
+
+        /* Statistics */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 1rem;
+            background: var(--secondary);
+            border-radius: 12px;
+        }
+
+        .stat-number {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+        }
+
+        /* Toast Notifications */
+        .toast-container {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            z-index: 1001;
+        }
+
+        .toast {
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            background: var(--card-bg);
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            animation: slideIn 0.3s ease;
+        }
+
+        .toast.success { border-left: 4px solid var(--accent); }
+        .toast.error { border-left: 4px solid var(--danger); }
+        .toast.info { border-left: 4px solid var(--primary); }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--secondary);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-secondary);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .main-container {
+                padding: 1rem;
+            }
+
+            .calendar-day {
+                min-height: 60px;
+            }
+
+            .assignment-dot {
+                font-size: 0.55rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <div class="logo-icon">📚</div>
+                <span class="logo-text">HomeworkHub</span>
+            </div>
+            <div class="user-section">
+                <div id="userInfo" style="display: none;">
+                    <div class="user-info">
+                        <img id="userAvatar" class="user-avatar" src="" alt="User">
+                        <span id="userName" class="user-name"></span>
+                    </div>
+                </div>
+                <button id="signOutBtn" class="btn btn-secondary" style="display: none;" onclick="handleSignOut()">
+                    Sign Out
+                </button>
+                <div id="googleSignInBtn"></div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-container">
+        <!-- Calendar Section -->
+        <section class="calendar-section">
+            <div class="calendar-header">
+                <div class="calendar-nav">
+                    <button onclick="previousMonth()">←</button>
+                    <h2 class="current-month" id="currentMonth"></h2>
+                    <button onclick="nextMonth()">→</button>
+                </div>
+                <button class="btn btn-secondary today-btn" onclick="goToToday()">Today</button>
+            </div>
+            <div class="calendar-grid" id="calendarGrid">
+                <!-- Days will be rendered here -->
+            </div>
+        </section>
+
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <!-- Quick Add -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">➕ Add Assignment</h3>
+                </div>
+                <form id="assignmentForm" onsubmit="addAssignment(event)">
+                    <div class="form-group">
+                        <label for="title">Assignment Title</label>
+                        <input type="text" id="title" placeholder="Math Chapter 5 Problems" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="subject">Subject</label>
+                        <input type="text" id="subject" placeholder="Mathematics" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="type">Type</label>
+                        <select id="type" required>
+                            <option value="homework">Homework</option>
+                            <option value="project">Project</option>
+                            <option value="exam">Exam</option>
+                            <option value="quiz">Quiz</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="dueDate">Due Date</label>
+                        <input type="date" id="dueDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="description">Description (optional)</label>
+                        <textarea id="description" placeholder="Additional notes..."></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">
+                        Add Assignment
+                    </button>
+                </form>
+            </div>
+
+            <!-- Statistics -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">📊 Statistics</h3>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-number" id="totalAssignments">0</div>
+                        <div class="stat-label">Total</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="pendingAssignments">0</div>
+                        <div class="stat-label">Pending</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="completedAssignments">0</div>
+                        <div class="stat-label">Completed</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="overdueAssignments">0</div>
+                        <div class="stat-label">Overdue</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Upcoming Assignments -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">📅 Upcoming</h3>
+                </div>
+                <div class="assignment-list" id="upcomingList">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📝</div>
+                        <p>No upcoming assignments</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </main>
+
+    <!-- Day Detail Modal -->
+    <div class="modal-overlay" id="dayModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modalDate"></h3>
+                <button class="modal-close" onclick="closeModal()">×</button>
+            </div>
+            <div id="modalAssignments">
+                <!-- Assignments for selected day -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Assignment Modal -->
+    <div class="modal-overlay" id="editModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Edit Assignment</h3>
+                <button class="modal-close" onclick="closeEditModal()">×</button>
+            </div>
+            <form id="editForm" onsubmit="saveEdit(event)">
+                <input type="hidden" id="editId">
+                <div class="form-group">
+                    <label for="editTitle">Assignment Title</label>
+                    <input type="text" id="editTitle" required>
+                </div>
+                <div class="form-group">
+                    <label for="editSubject">Subject</label>
+                    <input type="text" id="editSubject" required>
+                </div>
+                <div class="form-group">
+                    <label for="editType">Type</label>
+                    <select id="editType" required>
+                        <option value="homework">Homework</option>
+                        <option value="project">Project</option>
+                        <option value="exam">Exam</option>
+                        <option value="quiz">Quiz</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="editDueDate">Due Date</label>
+                    <input type="date" id="editDueDate" required>
+                </div>
+                <div class="form-group">
+                    <label for="editDescription">Description</label>
+                    <textarea id="editDescription"></textarea>
+                </div>
+                <div style="display: flex; gap: 0.75rem;">
+                    <button type="submit" class="btn btn-primary" style="flex: 1;">Save Changes</button>
+                    <button type="button" class="btn btn-danger" onclick="deleteAssignment()">Delete</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script>
+        // ==================== Configuration ====================
+        // IMPORTANT: Replace with your Google Client ID from Google Cloud Console
+        const GOOGLE_CLIENT_ID = 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com';
+
+        // API Base URL - change this when deploying
+        const API_BASE_URL = window.location.origin;
+
+        // ==================== State ====================
+        let currentDate = new Date();
+        let selectedDate = null;
+        let assignments = [];
+        let currentUser = null;
+        let googleIdToken = null; // Store the token for API calls
+
+        // ==================== Initialize ====================
+        document.addEventListener('DOMContentLoaded', () => {
+            loadAssignments();
+            renderCalendar();
+            updateStatistics();
+            renderUpcoming();
+            initGoogleSignIn();
+
+            // Set default date to today
+            document.getElementById('dueDate').valueAsDate = new Date();
+        });
+
+        // ==================== API Helper ====================
+        async function apiRequest(endpoint, options = {}) {
+            const headers = {
+                'Content-Type': 'application/json',
+                ...options.headers
+            };
+
+            // Add auth token if available
+            if (googleIdToken) {
+                headers['Authorization'] = `Bearer ${googleIdToken}`;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+                    ...options,
+                    headers
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'API request failed');
+                }
+
+                return await response.json();
+            } catch (error) {
+                console.error('API Error:', error);
+                throw error;
+            }
+        }
+
+        // ==================== Google Sign-In ====================
+        function initGoogleSignIn() {
+            // Check if Google Identity Services is loaded
+            if (typeof google !== 'undefined' && google.accounts) {
+                google.accounts.id.initialize({
+                    client_id: GOOGLE_CLIENT_ID,
+                    callback: handleGoogleSignIn,
+                    auto_select: true
+                });
+
+                google.accounts.id.renderButton(
+                    document.getElementById('googleSignInBtn'),
+                    {
+                        theme: 'outline',
+                        size: 'large',
+                        text: 'signin_with',
+                        shape: 'rectangular'
+                    }
+                );
+
+                // Check for existing session (token needs refresh)
+                const savedUser = localStorage.getItem('homeworkhub_user');
+                if (savedUser) {
+                    currentUser = JSON.parse(savedUser);
+                    // Token expired, user needs to sign in again for cloud sync
+                    // but can still use local data
+                    updateUIForSignedInUser();
+                }
+            } else {
+                // Show manual sign-in button if Google SDK not loaded
+                document.getElementById('googleSignInBtn').innerHTML = `
+                    <button class="btn btn-google" onclick="showToast('Please configure Google Client ID', 'info')">
+                        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+                        Sign in with Google
+                    </button>
+                `;
+            }
+        }
+
+        async function handleGoogleSignIn(response) {
+            // Store the token for API calls
+            googleIdToken = response.credential;
+
+            // Decode JWT token
+            const payload = decodeJwtResponse(response.credential);
+
+            currentUser = {
+                id: payload.sub,
+                name: payload.name,
+                email: payload.email,
+                picture: payload.picture
+            };
+
+            localStorage.setItem('homeworkhub_user', JSON.stringify(currentUser));
+            updateUIForSignedInUser();
+
+            // Sync data from backend
+            await syncFromCloud();
+
+            showToast(`Welcome, ${currentUser.name}!`, 'success');
+        }
+
+        function decodeJwtResponse(token) {
+            const base64Url = token.split('.')[1];
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            const jsonPayload = decodeURIComponent(atob(base64).split('').map(c => {
+                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+            }).join(''));
+            return JSON.parse(jsonPayload);
+        }
+
+        function updateUIForSignedInUser() {
+            document.getElementById('userInfo').style.display = 'block';
+            document.getElementById('userAvatar').src = currentUser.picture || 'https://via.placeholder.com/32';
+            document.getElementById('userName').textContent = currentUser.name;
+            document.getElementById('signOutBtn').style.display = 'block';
+            document.getElementById('googleSignInBtn').style.display = 'none';
+        }
+
+        function handleSignOut() {
+            currentUser = null;
+            googleIdToken = null;
+            localStorage.removeItem('homeworkhub_user');
+
+            document.getElementById('userInfo').style.display = 'none';
+            document.getElementById('signOutBtn').style.display = 'none';
+            document.getElementById('googleSignInBtn').style.display = 'block';
+
+            if (typeof google !== 'undefined' && google.accounts) {
+                google.accounts.id.disableAutoSelect();
+            }
+
+            showToast('Signed out successfully', 'info');
+        }
+
+        // ==================== Data Persistence ====================
+        function saveAssignmentsLocal() {
+            localStorage.setItem('homeworkhub_assignments', JSON.stringify(assignments));
+        }
+
+        async function saveAssignments() {
+            // Always save locally first
+            saveAssignmentsLocal();
+
+            // If user is signed in with valid token, sync to cloud
+            if (currentUser && googleIdToken) {
+                try {
+                    await syncToCloud();
+                } catch (error) {
+                    console.error('Cloud sync failed, data saved locally:', error);
+                }
+            }
+        }
+
+        function loadAssignments() {
+            const saved = localStorage.getItem('homeworkhub_assignments');
+            if (saved) {
+                assignments = JSON.parse(saved);
+            }
+        }
+
+        async function syncToCloud() {
+            if (!googleIdToken) {
+                console.log('No auth token, skipping cloud sync');
+                return;
+            }
+
+            try {
+                await apiRequest('/api/assignments/sync', {
+                    method: 'POST',
+                    body: JSON.stringify({ assignments })
+                });
+                console.log('Synced to cloud successfully');
+            } catch (error) {
+                console.error('Cloud sync failed:', error);
+                showToast('Cloud sync failed, data saved locally', 'error');
+            }
+        }
+
+        async function syncFromCloud() {
+            if (!googleIdToken) {
+                console.log('No auth token, using local data');
+                return;
+            }
+
+            try {
+                const cloudAssignments = await apiRequest('/api/assignments');
+
+                if (cloudAssignments && cloudAssignments.length > 0) {
+                    // Merge: prefer cloud data but keep local items not in cloud
+                    const cloudIds = new Set(cloudAssignments.map(a => a.id));
+                    const localOnly = assignments.filter(a => !cloudIds.has(a.id));
+
+                    assignments = [...cloudAssignments, ...localOnly];
+                    saveAssignmentsLocal();
+                    renderCalendar();
+                    updateStatistics();
+                    renderUpcoming();
+
+                    showToast('Data synced from cloud', 'success');
+                } else if (assignments.length > 0) {
+                    // No cloud data but have local data - upload it
+                    await syncToCloud();
+                    showToast('Local data uploaded to cloud', 'success');
+                }
+            } catch (error) {
+                console.error('Failed to sync from cloud:', error);
+                showToast('Using local data (cloud sync failed)', 'info');
+            }
+        }
+
+        function exportData() {
+            const data = {
+                assignments: assignments,
+                exportDate: new Date().toISOString(),
+                user: currentUser?.email || 'anonymous'
+            };
+
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `homeworkhub_backup_${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+
+            showToast('Data exported successfully', 'success');
+        }
+
+        async function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (data.assignments) {
+                        assignments = data.assignments;
+                        await saveAssignments();
+                        renderCalendar();
+                        updateStatistics();
+                        renderUpcoming();
+                        showToast('Data imported successfully', 'success');
+                    }
+                } catch (err) {
+                    showToast('Failed to import data', 'error');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // ==================== Calendar Functions ====================
+        function renderCalendar() {
+            const grid = document.getElementById('calendarGrid');
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+
+            // Update header
+            const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+                               'July', 'August', 'September', 'October', 'November', 'December'];
+            document.getElementById('currentMonth').textContent = `${monthNames[month]} ${year}`;
+
+            // Clear grid
+            grid.innerHTML = '';
+
+            // Add day headers
+            const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            dayNames.forEach(day => {
+                const header = document.createElement('div');
+                header.className = 'calendar-day-header';
+                header.textContent = day;
+                grid.appendChild(header);
+            });
+
+            // Get first day of month and total days
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const daysInPrevMonth = new Date(year, month, 0).getDate();
+
+            // Previous month days
+            for (let i = firstDay - 1; i >= 0; i--) {
+                const day = createDayElement(daysInPrevMonth - i, year, month - 1, true);
+                grid.appendChild(day);
+            }
+
+            // Current month days
+            for (let i = 1; i <= daysInMonth; i++) {
+                const day = createDayElement(i, year, month, false);
+                grid.appendChild(day);
+            }
+
+            // Next month days
+            const totalCells = Math.ceil((firstDay + daysInMonth) / 7) * 7;
+            const remaining = totalCells - (firstDay + daysInMonth);
+            for (let i = 1; i <= remaining; i++) {
+                const day = createDayElement(i, year, month + 1, true);
+                grid.appendChild(day);
+            }
+        }
+
+        function createDayElement(dayNum, year, month, isOtherMonth) {
+            const day = document.createElement('div');
+            day.className = 'calendar-day';
+
+            if (isOtherMonth) {
+                day.classList.add('other-month');
+            }
+
+            const date = new Date(year, month, dayNum);
+            const dateStr = formatDate(date);
+
+            // Check if today
+            const today = new Date();
+            if (date.toDateString() === today.toDateString()) {
+                day.classList.add('today');
+            }
+
+            // Day number
+            const numDiv = document.createElement('div');
+            numDiv.className = 'day-number';
+            numDiv.textContent = dayNum;
+            day.appendChild(numDiv);
+
+            // Assignments for this day
+            const dayAssignments = assignments.filter(a => a.dueDate === dateStr);
+            if (dayAssignments.length > 0) {
+                const assignmentsDiv = document.createElement('div');
+                assignmentsDiv.className = 'day-assignments';
+
+                const maxShow = 2;
+                dayAssignments.slice(0, maxShow).forEach(a => {
+                    const dot = document.createElement('div');
+                    dot.className = `assignment-dot ${a.type}`;
+                    dot.textContent = a.title;
+                    assignmentsDiv.appendChild(dot);
+                });
+
+                if (dayAssignments.length > maxShow) {
+                    const more = document.createElement('div');
+                    more.className = 'more-assignments';
+                    more.textContent = `+${dayAssignments.length - maxShow} more`;
+                    assignmentsDiv.appendChild(more);
+                }
+
+                day.appendChild(assignmentsDiv);
+            }
+
+            // Click handler
+            day.addEventListener('click', () => openDayModal(date, dayAssignments));
+
+            return day;
+        }
+
+        function previousMonth() {
+            currentDate.setMonth(currentDate.getMonth() - 1);
+            renderCalendar();
+        }
+
+        function nextMonth() {
+            currentDate.setMonth(currentDate.getMonth() + 1);
+            renderCalendar();
+        }
+
+        function goToToday() {
+            currentDate = new Date();
+            renderCalendar();
+        }
+
+        // ==================== Assignment Functions ====================
+        async function addAssignment(event) {
+            event.preventDefault();
+
+            const assignment = {
+                id: Date.now().toString(),
+                title: document.getElementById('title').value,
+                subject: document.getElementById('subject').value,
+                type: document.getElementById('type').value,
+                dueDate: document.getElementById('dueDate').value,
+                description: document.getElementById('description').value,
+                completed: false,
+                createdAt: new Date().toISOString()
+            };
+
+            assignments.push(assignment);
+            await saveAssignments();
+            renderCalendar();
+            updateStatistics();
+            renderUpcoming();
+
+            // Reset form
+            document.getElementById('assignmentForm').reset();
+            document.getElementById('dueDate').valueAsDate = new Date();
+
+            showToast('Assignment added successfully', 'success');
+        }
+
+        async function toggleComplete(id) {
+            const assignment = assignments.find(a => a.id === id);
+            if (assignment) {
+                assignment.completed = !assignment.completed;
+                await saveAssignments();
+                renderCalendar();
+                updateStatistics();
+                renderUpcoming();
+
+                if (selectedDate) {
+                    const dayAssignments = assignments.filter(a => a.dueDate === formatDate(selectedDate));
+                    renderModalAssignments(dayAssignments);
+                }
+
+                showToast(assignment.completed ? 'Marked as complete' : 'Marked as incomplete', 'info');
+            }
+        }
+
+        function editAssignment(id) {
+            const assignment = assignments.find(a => a.id === id);
+            if (assignment) {
+                document.getElementById('editId').value = assignment.id;
+                document.getElementById('editTitle').value = assignment.title;
+                document.getElementById('editSubject').value = assignment.subject;
+                document.getElementById('editType').value = assignment.type;
+                document.getElementById('editDueDate').value = assignment.dueDate;
+                document.getElementById('editDescription').value = assignment.description || '';
+
+                document.getElementById('editModal').classList.add('active');
+            }
+        }
+
+        async function saveEdit(event) {
+            event.preventDefault();
+
+            const id = document.getElementById('editId').value;
+            const assignment = assignments.find(a => a.id === id);
+
+            if (assignment) {
+                assignment.title = document.getElementById('editTitle').value;
+                assignment.subject = document.getElementById('editSubject').value;
+                assignment.type = document.getElementById('editType').value;
+                assignment.dueDate = document.getElementById('editDueDate').value;
+                assignment.description = document.getElementById('editDescription').value;
+
+                await saveAssignments();
+                renderCalendar();
+                updateStatistics();
+                renderUpcoming();
+                closeEditModal();
+                closeModal();
+
+                showToast('Assignment updated', 'success');
+            }
+        }
+
+        async function deleteAssignment() {
+            const id = document.getElementById('editId').value;
+
+            if (confirm('Are you sure you want to delete this assignment?')) {
+                assignments = assignments.filter(a => a.id !== id);
+                await saveAssignments();
+                renderCalendar();
+                updateStatistics();
+                renderUpcoming();
+                closeEditModal();
+                closeModal();
+
+                showToast('Assignment deleted', 'info');
+            }
+        }
+
+        // ==================== Modal Functions ====================
+        function openDayModal(date, dayAssignments) {
+            selectedDate = date;
+
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('modalDate').textContent = date.toLocaleDateString('en-US', options);
+
+            renderModalAssignments(dayAssignments);
+            document.getElementById('dayModal').classList.add('active');
+        }
+
+        function renderModalAssignments(dayAssignments) {
+            const container = document.getElementById('modalAssignments');
+
+            if (dayAssignments.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">✨</div>
+                        <p>No assignments due this day</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = dayAssignments.map(a => `
+                <div class="assignment-item ${a.completed ? 'completed' : ''}">
+                    <div class="assignment-item-header">
+                        <span class="assignment-title">${a.title}</span>
+                        <span class="assignment-type ${a.type}">${a.type}</span>
+                    </div>
+                    <div class="assignment-subject">${a.subject}</div>
+                    ${a.description ? `<p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.5rem;">${a.description}</p>` : ''}
+                    <div class="assignment-actions">
+                        <button class="btn btn-secondary" onclick="toggleComplete('${a.id}')">
+                            ${a.completed ? '↩️ Undo' : '✓ Complete'}
+                        </button>
+                        <button class="btn btn-secondary" onclick="editAssignment('${a.id}')">
+                            ✏️ Edit
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function closeModal() {
+            document.getElementById('dayModal').classList.remove('active');
+            selectedDate = null;
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').classList.remove('active');
+        }
+
+        // ==================== Statistics & Upcoming ====================
+        function updateStatistics() {
+            const today = formatDate(new Date());
+
+            const total = assignments.length;
+            const completed = assignments.filter(a => a.completed).length;
+            const pending = assignments.filter(a => !a.completed).length;
+            const overdue = assignments.filter(a => !a.completed && a.dueDate < today).length;
+
+            document.getElementById('totalAssignments').textContent = total;
+            document.getElementById('completedAssignments').textContent = completed;
+            document.getElementById('pendingAssignments').textContent = pending;
+            document.getElementById('overdueAssignments').textContent = overdue;
+        }
+
+        function renderUpcoming() {
+            const container = document.getElementById('upcomingList');
+            const today = formatDate(new Date());
+
+            const upcoming = assignments
+                .filter(a => !a.completed && a.dueDate >= today)
+                .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate))
+                .slice(0, 5);
+
+            if (upcoming.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🎉</div>
+                        <p>No upcoming assignments!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = upcoming.map(a => `
+                <div class="assignment-item" onclick="editAssignment('${a.id}')">
+                    <div class="assignment-item-header">
+                        <span class="assignment-title">${a.title}</span>
+                        <span class="assignment-type ${a.type}">${a.type}</span>
+                    </div>
+                    <div class="assignment-subject">${a.subject}</div>
+                    <div class="assignment-due">
+                        📅 ${formatDisplayDate(a.dueDate)}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // ==================== Utility Functions ====================
+        function formatDate(date) {
+            return date.toISOString().split('T')[0];
+        }
+
+        function formatDisplayDate(dateStr) {
+            const date = new Date(dateStr + 'T00:00:00');
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+
+            if (date.toDateString() === today.toDateString()) {
+                return 'Today';
+            } else if (date.toDateString() === tomorrow.toDateString()) {
+                return 'Tomorrow';
+            } else {
+                return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            }
+        }
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `
+                <span>${type === 'success' ? '✓' : type === 'error' ? '✕' : 'ℹ'}</span>
+                <span>${message}</span>
+            `;
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.animation = 'slideIn 0.3s ease reverse';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // Close modals on escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeModal();
+                closeEditModal();
+            }
+        });
+
+        // Close modals on overlay click
+        document.querySelectorAll('.modal-overlay').forEach(overlay => {
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) {
+                    closeModal();
+                    closeEditModal();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
